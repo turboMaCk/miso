@@ -169,10 +169,15 @@ let
       };
     };
   };
-  pkgs = import (builtins.fetchTarball {
+  config = {
+    packageOverrides = overrides;
+    allowUnfree = true;
+  };
+  nixpkgs = import (builtins.fetchTarball {
     url = "https://github.com/NixOS/nixpkgs/archive/${rev}.tar.gz";
     inherit sha256;
-  }) { config.packageOverrides = overrides; config.allowUnfree = true; };
+  });
+  pkgs = nixpkgs { inherit config; };
   more-examples = import ./nix/examples.nix pkgs;
   uploadCoverage = pkgs.writeScriptBin "upload-coverage.sh" ''
     #!/usr/bin/env bash
@@ -216,7 +221,7 @@ let
           };
 in
 {
-  inherit pkgs;
+  inherit nixpkgs config pkgs;
   miso-ghcjs = pkgs.haskell.packages.ghcjs86.miso;
   miso-ghc = pkgs.haskell.packages.ghc865.miso;
   inherit (pkgs.haskell.packages.ghc865) miso-jsaddle;
